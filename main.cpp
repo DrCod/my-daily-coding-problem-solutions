@@ -10,9 +10,8 @@
  *
  * Created on June 16, 2019, 9:05 AM
  */
-
-#include<iostream>
 #include <cstdlib>
+#include<iostream>
 #include<vector>
 #include<queue>
 #include<string>
@@ -21,8 +20,8 @@
 #include <algorithm>
 #include <map>
 #include <memory>
-#include<node/node.h>
 #include <list>
+
 
 
 
@@ -30,6 +29,34 @@
 using namespace std;
 
 
+struct{
+    
+    int data;
+    node *next;
+};
+
+class ListNode{
+    
+private:
+    node *head,*tail;
+    ListNode(){
+        head =NULL;
+        tail =NULL;
+    }
+    
+};
+
+
+
+
+
+
+
+
+
+
+
+shared_ptr<list<int>> merge_sorted_linked_lists(shared_ptr<list<int>> L,shared_ptr<list<int>> F);
 std::queue<int> arraySubsetProduct(vector<int> &arr);
 bool sumAddUpToK(int k, vector<int> &num_list);
 string intToString(int x);
@@ -43,6 +70,7 @@ int main(int argc, char** argv) {
     string s;
    // string* sptr; 
     //cout<< "Enter a string to reverse it: ";
+    list =
     cin>> s;
     //sptr =&s;
     phone_mnemonic(s);
@@ -297,11 +325,11 @@ lists provided as input. Your function should use O(1) additional storage.
  *The only field you can change in a node is next.
  */
 
-shared_ptr<list<int>> merge_sorted_linked_lists(shared_ptr<list<int>> L,shared_ptr<list<int>> F){
-    shared_ptr<list<int>> sorted_head =nullptr, tail =nullptr;
+shared_ptr<ListNode> merge_sorted_linked_lists(shared_ptr<ListNode> L,shared_ptr<ListNode> F){
+    shared_ptr<ListNode> sorted_head =nullptr, tail =nullptr;
     
     while(L&&F){
-        append_node_and_advance(&sorted_head,&tail,L->data < F->data? &L:&F);
+        append_node_and_advance(&sorted_head,&tail,L->d < F->data? &L:&F);
     }
  //append remaining nodes of F
     if(F){
@@ -316,14 +344,54 @@ shared_ptr<list<int>> merge_sorted_linked_lists(shared_ptr<list<int>> L,shared_p
     return sorted_head;
 } 
 
-void append_node_and_advance(shared_ptr<list<int>>* head,shared_ptr<list<int>>* tail,shared_ptr<list<int>>* node){
+void append_node_and_advance(shared_ptr<ListNode>* head,shared_ptr<ListNode>* tail,shared_ptr<ListNode>* node){
     append_node(*node, head,tail);
     //advance node
     *node = (*node)->next;
 }
 
-void append_node(const shared_ptr<list<int>> &node,const shared_ptr<list<int>> *head,
-        const shared_ptr<list<int>> *tail ){
+void append_node(const shared_ptr<ListNode> &node,const shared_ptr<ListNode> *head,
+        const shared_ptr<ListNode> *tail ){
     *head ? (*tail)->next = node: *head =node;
     *tail =node;// resets the tail to the last node;
+}
+
+
+/*
+ Give a linear time nonrecursive function that reverses a singly linked list. 
+ * The function should use no more than constant storage beyond that needed for the list
+itself.
+ */
+// TWO APPROACHES
+//the recursive approach using O(n) time complexity 
+
+shared_ptr<ListNode<int>> reverse_linked_list(const shared_ptr<ListNode<int>> &head){
+    
+    if(!head || !head->next){
+        return head;
+    }
+    
+    shared_ptr<ListNode<int>> new_head =reverse_linked_list(head->next);
+    
+    head->next->next =head;
+    head->next =nullptr;
+    return new_head;
+    
+}
+
+
+// Non-recursive solution using 2 pointers to traverse the list
+//Uses O(1) additional storage and O(n) time complexity.
+
+shared_ptr<ListNode<int>> reverse_linked_list(const shared_ptr<ListNode<int>> &head){
+
+    shared_ptr<ListNode<int>> prev =nullptr, curr;
+
+    while(curr){
+        shared_ptr<ListNode<int>> temp = new shared_ptr<ListNode<int>>;
+        curr->next =prev;
+        prev =curr;
+        curr= temp;
+    }
+    return prev;
 }
