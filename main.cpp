@@ -21,6 +21,7 @@
 #include <map>
 #include <memory>
 #include <list>
+#include<stack>
 
 
 
@@ -29,52 +30,55 @@
 using namespace std;
 
 
-struct{
+class Queue{
     
-    int data;
-    node *next;
-};
-
-class ListNode{
+public:
+    explicit Queue(size_t cap): data_(cap){}
     
-private:
-    node *head,*tail;
-    ListNode(){
-        head =NULL;
-        tail =NULL;
+    void enqueue(int x){
+        // dynamically resizes due to data_size() limit
+        
+        if (count_ == data_.size()){
+            // rearrange the elements of the array
+            
+            rotate(data_.begin(),data_.end()+ head_, data_.end());
+            //reset the head and the tail
+            
+            head_ =0, tail_ =count_ ;
+            data_.resize(data_.size()<<1);
+            
+        }
+        data_[tail_] =x;
+        tail_ = (tail_ +1)% data_.size(), count_ ++;
+        
     }
     
+    int dequeue(){
+        if(!count_){
+            throw  length_error("empty queue");
+        }
+        count_ --;
+        int ret = data_[head_];
+        head_ = (head_ + 1) % data_.size();
+         
+        return ret;
+    }
+    
+    size_t size() const
+    {
+        return count_;
+    }    
+private:
+    size_t head_ =0, tail_ = 0,count_ =0;
+    vector<int> data_;
+      
 };
 
-
-
-
-
-
-
-
-
-
-
-shared_ptr<list<int>> merge_sorted_linked_lists(shared_ptr<list<int>> L,shared_ptr<list<int>> F);
-std::queue<int> arraySubsetProduct(vector<int> &arr);
-bool sumAddUpToK(int k, vector<int> &num_list);
-string intToString(int x);
-int stringToInt(const string & s);
-void reverse_strings(string* s );
-void phone_mnemonic(const string &num);
-void  phone_mnemonic_helper(const string &num,int d, string* ans);
 int main(int argc, char** argv) {
     
-    //vector<int> sample_arr ={10,15,3,7}; 
-    string s;
-   // string* sptr; 
-    //cout<< "Enter a string to reverse it: ";
-    list =
-    cin>> s;
-    //sptr =&s;
-    phone_mnemonic(s);
     
+            
+            
     return 0;
 }
 
@@ -325,8 +329,8 @@ lists provided as input. Your function should use O(1) additional storage.
  *The only field you can change in a node is next.
  */
 
-shared_ptr<ListNode> merge_sorted_linked_lists(shared_ptr<ListNode> L,shared_ptr<ListNode> F){
-    shared_ptr<ListNode> sorted_head =nullptr, tail =nullptr;
+shared_ptr<ListNode<int> merge_sorted_linked_lists(shared_ptr<ListNode<int>> L,shared_ptr<ListNode<int>> F){
+    shared_ptr<ListNode<int>> sorted_head =nullptr, tail =nullptr;
     
     while(L&&F){
         append_node_and_advance(&sorted_head,&tail,L->d < F->data? &L:&F);
@@ -344,14 +348,14 @@ shared_ptr<ListNode> merge_sorted_linked_lists(shared_ptr<ListNode> L,shared_ptr
     return sorted_head;
 } 
 
-void append_node_and_advance(shared_ptr<ListNode>* head,shared_ptr<ListNode>* tail,shared_ptr<ListNode>* node){
+void append_node_and_advance(shared_ptr<ListNode<int>>* head,shared_ptr<ListNode<int>>* tail,shared_ptr<ListNode<int>>* node){
     append_node(*node, head,tail);
     //advance node
     *node = (*node)->next;
 }
 
-void append_node(const shared_ptr<ListNode> &node,const shared_ptr<ListNode> *head,
-        const shared_ptr<ListNode> *tail ){
+void append_node(const shared_ptr<ListNode<int>> &node,const shared_ptr<ListNode<int>> *head,
+        const shared_ptr<ListNode<int>> *tail ){
     *head ? (*tail)->next = node: *head =node;
     *tail =node;// resets the tail to the last node;
 }
@@ -394,4 +398,286 @@ shared_ptr<ListNode<int>> reverse_linked_list(const shared_ptr<ListNode<int>> &h
         curr= temp;
     }
     return prev;
+}
+
+
+/*
+ Given a reference to the head of a singly linked list L, how would
+you determine whether L ends in a null or reaches a cycle of nodes? 
+ * Write a function that returns null if there does not exist a cycle,
+ *  and the reference to the start of the cycle if a cycle is present.
+ *  (You do not know the length of the list in advance.)
+ */
+shared_ptr<ListNode<int>> has_cycle(const shared_ptr<ListNode<int>> &head){
+    shared_ptr<ListNode<int>> fast =head, slow =head;
+    while(fast && fast->next && fast->next-next && slow && slow->next){
+    slow =slow->next, fast =fast->next->next;
+    
+    if(slow == fast){
+        //there is a cycle
+        
+        //calculate the cycle length
+        int cycle_len=0;
+        
+        do{
+            cycle_len++;
+            fast=fast->next;
+        }while( slow != fast);
+        //tries to find the start of the cycle
+        slow =head,fast =head;
+        // fast pointer advances cycle_len first
+        while(cycle_len--){
+            fast =fast->next;
+        }
+        //both pointers advances simultaneously
+        while(slow != fast){
+            slow=slow->next, fast =fast->next;
+        }
+        return slow; //start the cycle.
+     }
+    }
+  return nullptr;// no cycle
+}
+// second variant computes the beginning of the cycle
+shared_ptr<ListNode<int>> cycle_beginning(const shared_ptr<ListNode<int>> &head){
+    shared_ptr<ListNode<int>> fast =head, slow =head;
+    while(fast && fast->next && fast->next-next && slow && slow->next){
+    slow =slow->next, fast =fast->next->next;
+    
+    if(slow == fast){
+        //there is a cycle
+        
+        //tries to find the start of the cycle
+        slow =head; //both pointers advances simultaneously
+        
+        while(slow != fast){
+            slow=slow->next, fast =fast->next;
+        }
+        return slow; //start the cycle.
+     }
+    }
+  return nullptr;// no cycle
+}
+
+/*
+ Implement a function which takes as input a pointer to the head of a
+postings list L, and returns a copy of the postings list. Your function should take O(n) time,
+where n is the length of the postings list and should use O(1) storage beyond that required
+for the n nodes in the copy. You can modify the original list, but must restore it to its initial
+state before returning.
+ */
+
+shared_ptr<ListNode<int>> copy_posting_list(const shared_ptr<ListNode<int>> &L ){
+    if(!L){
+        //returns empty list if L is null pointer
+        return nullptr;
+    }
+    
+    //1st stage ->copy nodes from L
+    shared_ptr<ListNode<int>> p =L;
+    while(p){
+        auto temp =make_shared<ListNode<int>>(ListNode<int> {p->data, p->next, nullptr});
+        p->next = temp;
+        p=temp->next;
+
+    }
+   //2nd stage update the jump fields
+    
+    p =L;
+    while(p){
+        if(p->jump){
+            p->next->jump =p->jump->next;
+        }
+        p= p->next->next;
+    }
+    // 3rd stage : restore the next field
+    p= L;
+    shared_ptr<ListNode<int>> copied= p->next;
+    while(p->next){
+        shared_ptr<ListNode<int>> temp = p->next;
+        p =temp;
+    }
+    return copied;
+}
+
+/*
+ Design a stack that supports a max operation, which returns the
+maximum value stored in the stack, and throws an exception if the stack is empty. Assume
+elements are comparable. All operations must be O(1) time. If the stack contains n elements,
+you can use O(n) space, in addition to what is required for the elements themselves.
+ */
+class Stack{
+    
+public:
+    bool empty() const{
+        s_.empty();
+    }
+    
+    int max() const {
+        if(!aux_.empty()){
+        return aux_.top().first;
+    }
+        throw length_error("empty stack");
+    }
+    
+    int pop(){
+    
+        if(empty()){
+            throw length_error("empty stack");
+        }
+        
+        int ret =s_.top();
+        s_.pop();
+        
+        if(ret == aux_.top().first){
+            --aux_.top().second;
+            if(aux_.top().second == 0){
+                aux_.pop();
+            }
+        }
+        return ret;
+        
+    }
+    
+    void push(int x){
+        s_.emplace(x);
+        if(!aux_.empty()){
+            
+            if(x == aux_.top().first){
+                ++aux_.top().second;
+            }
+            else if(x > aux_.top().first){
+                aux_.emplace(x,1);
+            }
+            
+        }
+        else{
+            aux_.emplace(x,1);
+        }
+    }
+    
+    
+private:
+    stack<int> s_;
+    stack<pair<int ,int>> aux_; 
+    
+};
+/*
+ Given the root node r of a binary tree, print all the keys at r and its
+descendants. The keys should be printed in the order of the corresponding nodes’ depths.
+Specifically, all keys corresponding to nodes of depth d should appear in a single line, and the
+next line should correspond to keys corresponding to nodes of depth d + 1. You cannot use
+recursion. You may use a single queue, and constant additional storage. For example, you
+should print
+ */
+
+void print_binary_tree_depth_order(const unique_ptr<BinaryTreeNode<int>> &r){
+    
+    if(!r){
+        return;
+    }
+    queue<BinaryTreeNode<int>*>q;
+    q.emplace(r.get());
+    size_t count = q.size();
+    while(!q.empty()){
+        cout << q.front()->data << ' ';
+        if(q.front()-left){
+            q.emplace(q.front()->left.get());
+        }
+        if(q.front()->right){
+            q.emplace(q.front()->right.get());
+        }
+        q.pop();
+        if(--count == 0){
+            cout<<;
+            count =q.size();
+        }
+    }  
+}
+
+/*Implement a queue API using an array for storing elements. Your API should 
+ * include a constructor function, which takes as argument the capacity of the queue,
+enqueue and dequeue functions, a size function, which returns the number of elements
+stored, and implement dynamic resizing.
+ */
+class Queue{
+    
+public:
+    explicit Queue(size_t cap): data_(cap){}
+    
+    void enqueue(int x){
+        // dynamically resizes due to data_size() limit
+        
+        if (count_ == data_.size()){
+            // rearrange the elements of the array
+            
+            rotate(data_.begin(),data_.end()+ head_, data_.end());
+            //reset the head and the tail
+            
+            head_ =0, tail_ =count_ ;
+            data_.resize(data_.size()<<1);
+            
+        }
+        data_[tail_] =x;
+        tail_ = (tail_ +1)% data_.size(), count_ ++;
+        
+    }
+    
+    int dequeue(){
+        if(!count_){
+            throw  length_error("empty queue");
+        }
+        count_ --;
+        int ret = data_[head_];
+        head_ = (head_ + 1) % data_.size();
+         
+        return ret;
+    }
+    
+    size_t size() const
+    {
+        return count_;
+    }    
+private:
+    size_t head_ =0, tail_ = 0,count_ =0;
+    vector<int> data_;
+      
+};
+
+
+/*
+ Write a function that takes as input the root of a binary tree and
+returns true or false depending on whether the tree is balanced. Use O(h) additional
+storage, where h is the height of the tree.
+ */
+
+
+bool is_balanced_binary_tree(const unique_ptr<BinaryTreeNode<int>> & T){
+    return getHeight(T) != -2;
+}
+
+// getHeight implementation -> returns the height of the binary tree
+int getHeight(const unique_ptr<BinaryTreeNode<int>> & T){
+    
+    if(!T){
+        return -1; // base case
+    }
+    
+    int lft_height = getHeight(T->left);
+    
+    if(lft_height == -2){
+        return -2;
+    }
+    
+    int rt_height =getHeight(T-right);
+    
+    if(rt_height == -2){
+       return -2;
+    }
+    if( abs(lft_height - rt_height > 1)){
+        return -2; // tree not balanced
+    }
+    
+    return max(rt_height,lft_height) +  1; // returns the height of the tree
+    
 }
